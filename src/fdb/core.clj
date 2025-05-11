@@ -85,6 +85,7 @@
   [config-path f]
   (let [{:keys [db-path extra-deps load serve] :as config} (-> config-path slurp edn/read-string)]
     (when extra-deps
+      (println "extra-deps" extra-deps)
       (binding [clojure.core/*repl* true]
         ;; Needs dynamic classloader when running from cli
         ;; https://ask.clojure.org/index.php/10761/clj-behaves-different-in-the-repl-as-opposed-to-from-a-file
