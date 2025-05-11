@@ -25,11 +25,14 @@
        (re-seq #"\[[^\[]+\]\(([^)]+)\)")
        (map second)
        (map http/decode-uri)
-       (map #(->> %
-                  (fs/path (fs/parent self))
-                  (fs/relativize mount)
-                  fs/normalize
-                  str))))
+       (map #(if (or (str/starts-with? % "http")
+                     (str/starts-with? % "zotero"))
+                %
+                (->> %
+                     (fs/path (fs/parent self))
+                     (fs/relativize mount)
+                     fs/normalize
+                     str)))))
 
 ;; https://help.obsidian.md/Linking+notes+and+files/Internal+links#Supported+formats+for+internal+links
 (defn wikilinks [md]
@@ -105,6 +108,10 @@
   (wikilinks file)
 
   (mdlinks file "foo/bar/file.md" "foo")
+
+  
+  
+  ; Illegal char <:> at index 24: zettelkasten\pages\https:\vuejs.org\assets\provide-inject.tIACH1Z-.png
 )
 
 ;; TODO:

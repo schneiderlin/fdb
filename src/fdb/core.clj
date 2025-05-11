@@ -91,7 +91,7 @@
         (set-dynamic-classloader!)
         (deps/add-libs extra-deps)))
     (with-open [node (or (when (= config-path (:config-path @call/*arg))
-                           (-> @call/*arg :node u/closeable))
+                           (-> @call/*arg :node u/closeable)) ;; TODO: lzh
                          (db/start-node (u/sibling-path config-path db-path)))]
       (call/with-arg {:config-path config-path
                       :config      config
@@ -116,28 +116,29 @@
   "Read id-or-ids from fs and update them in node. Returns tx without ops."
   [config-path config node id-or-ids]
   (u/with-time [t-ms #(log/debug "update! took" (t-ms) "ms")]
-    (some->> id-or-ids
-             u/one-or-many
-             not-empty
-             (u/side-effect->> (fn [ids]
-                                 (log/info "updating" (str/join ", " (take 5 ids))
-                                           (if (> (count ids) 5)
-                                             (str "and " (-> ids count (- 5) str) " more")
-                                             ""))))
-             (pmap (fn [id]
-                     (let [path (metadata/id->path config-path config id)]
-                       (if-some [metadata (metadata/read path)]
-                         (call/with-arg {:self      {:xt/id id}
-                                         :self-path path}
-                           [::xt/put (merge
-                                      ;; order matters: reader data, then metadata, then id
-                                      ;; metadata overrides reader data, id overrides all
-                                      (readers/read config id)
-                                      metadata
-                                      {:xt/id      id
-                                       :fdb/parent (-> id fs/parent str)})])
-                         [::xt/delete id]))))
-             (xt/submit-tx node))))
+    (let [data (some->> id-or-ids
+                        u/one-or-many
+                        not-empty
+                        (u/side-effect->> (fn [ids]
+                                            (log/info "updating" (str/join ", " (take 5 ids))
+                                                      (if (> (count ids) 5)
+                                                        (str "and " (-> ids count (- 5) str) " more")
+                                                        ""))))
+                        (pmap (fn [id]
+                                (let [path (metadata/id->path config-path config id)]
+                                  (if-some [metadata (metadata/read path)]
+                                    (call/with-arg {:self      {:xt/id id}
+                                                    :self-path path}
+                                      [::xt/put (merge
+                                                 ;; order matters: reader data, then metadata, then id
+                                                 ;; metadata overrides reader data, id overrides all
+                                                 (readers/read config id)
+                                                 metadata
+                                                 {:xt/id      id
+                                                  :fdb/parent (-> id fs/parent str)})])
+                                    [::xt/delete id])))))]
+      (println "node" node)
+      (xt/submit-tx node data))))
 
 (defn stale
   "Returns all ids that are out of sync between fs and node."
