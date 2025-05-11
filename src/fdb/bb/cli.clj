@@ -99,7 +99,8 @@
     (start-fdb-repl config-path debug)
     (eval-in-fdb config-path 'fdb.core/sync config-path)))
 
-(defn read [{{:keys [config pattern]} :opts}]
+(defn read [{{:keys [config pattern]
+              :or {pattern "**"}} :opts}]
   (let [config-path (find-config-path config)]
     (eval-in-fdb config-path 'fdb.core/read config-path (str (fs/cwd)) pattern)))
 
