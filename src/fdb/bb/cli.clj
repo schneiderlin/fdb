@@ -88,13 +88,6 @@
                           :serve {:routes {}}})
         (log/info "created new config at" path)))))
 
-(comment
-  (init {:dir "."})
-
-  :rcf)
-
-
-
 (defn watch [{{:keys [config debug]} :opts}]
   (let [config-path (find-config-path config)
         repl        (start-fdb-repl config-path debug)]
@@ -142,27 +135,7 @@ All commands take the following options:
    {:cmds []        :fn help :spec spec}])
 
 (defn -main [& args]
-  (println "ARGS:" args) 
-  (let [result (cli/dispatch table args)]
-    (println "DISPATCH RESULT:" result)
-    result))
-
-(comment
-  (-main "init" ".")
-
-  (defn test-init [{:keys [dir]}]
-    (println "INIT CALLED WITH DIR:" dir))
-
-  (def test-table
-    [{:cmds [] :fn (fn [_] (println "HELP"))}
-     {:cmds ["init"] :fn test-init
-      #_#_:args->opts [:dir]}])
-
-  (cli/dispatch
-   test-table
-   ["program" "init"])
-
-  :rcf)
+  (cli/dispatch table args))
 
 ;; Call main when bb is called over this file.
 (when (= *file* (System/getProperty "babashka.file"))
