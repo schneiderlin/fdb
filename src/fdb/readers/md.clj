@@ -97,10 +97,13 @@
   (let [md            (slurp self-path)
         [_ yml]       (re-find #"(?s)^(?:---\r?\n(.*?)\r?\n---\r?\n)?" md)
         front-matter' (front-matter yml)
-        refs'         (refs call-arg md)]
+        refs'         (refs call-arg md)
+        tags'         (tags md)]
     (merge (read-edn-for-fdb-keys front-matter')
            (when (seq refs')
-             {:fdb/refs refs'}))))
+             {:fdb/refs refs'})
+           (when (seq tags')
+             {:tags tags'}))))
 
 (comment
   @(def file (slurp (io/resource "md/file.md")))
