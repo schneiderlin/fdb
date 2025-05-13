@@ -39,8 +39,10 @@
          ;; Don't really use medley directly, but clojure-mail does, and it always shows
          ;; a warning about abs being overwritten because it's on an old medley version
          dev.weavejester/medley      {:mvn/version "1.7.0"}
-         
+         ;; lzh 自己加的
          no.cjohansen/dataspex {:mvn/version "2025.05.7"}
+         no.cjohansen/replicant {:mvn/version "2025.03.27"}
+         org.clojure/data.xml {:mvn/version "0.0.8"}
          }
 
  :aliases
